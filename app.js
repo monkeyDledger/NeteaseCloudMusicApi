@@ -68,6 +68,9 @@ fs.readdirSync("./router/").forEach(file => {
   app.use(route, Wrap(require("./router/" + file)));
 });
 
+// const apiRouter = require('./route');
+// app.use('/api', apiRouter);
+
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {

@@ -1,0 +1,92 @@
+body {
+  width: 100%;
+}
+
+#app {
+  width: 600px;
+  min-width: 450px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background-color: white;
+
+  .login-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 450px;
+    margin-top: -200px;
+    margin-left: -225px;
+
+    .login-title {
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    .login-form-button {
+      float: right;
+    }
+  }
+
+  .user-info {
+    display: inline-block;
+    margin-top: 50px;
+
+    .name {
+      margin-left: 10px;
+    }
+  }
+  .steps {
+    margin-top: 50px;
+    margin-bottom: 30px;
+    width: 100%;
+
+    .ant-steps-item-description {
+      overflow: hidden;
+      white-space: normal;
+      word-break: break-all;
+    }
+  }
+  .content {
+    width: 100%;
+    min-height: 200px;
+
+    .label {
+      margin-top: 20px;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    .refresh-icon {
+      float: right;
+      cursor: pointer;
+    }
+
+    .target-avatar {
+      width: 85px;
+      margin: 15px 15px 5px 15px;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .target-name {
+      text-align: center;
+      display: inline-block;
+      width: 100%;
+      margin-top: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+  .steps-action {
+    margin-top: 20px;
+    float: right;
+  }
+}
+
+.ant-confirm-body .ant-confirm-content .msg-url {
+  background-color: #efefef;
+  font-size: 14px;
+  padding: 1px;
+  margin-top: 10px;
+}
