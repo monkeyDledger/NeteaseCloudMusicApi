@@ -11,6 +11,8 @@ import {
 } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 
+import copy from 'copy-to-clipboard';
+
 const Step = Steps.Step;
 
 export default class Main extends React.Component {
@@ -18,7 +20,7 @@ export default class Main extends React.Component {
     super(props);
     this.state = {
       curStep: 0,
-      uids: [],
+      uids: null,
       playlist: "2276679818",
       msg: "这首歌会成为今年的爆款！！！",
       songId: "513363403",
@@ -70,7 +72,7 @@ export default class Main extends React.Component {
   handleRefresh() {
     this.setState(
       {
-        offset: this.state.offset + 20
+        offset: this.state.offset + 30
       },
       () => {
         this.getUids();
@@ -96,32 +98,39 @@ export default class Main extends React.Component {
         if (i !== uids.length - 1) sendPlayListParam += ",";
       }
       console.log(sendPlayListParam);
-      Modal.success({
-        title: "私信地址",
-        width: 580,
-        content: (
-          <div>
-            <Alert
-              type="info"
-              message="复制下面的私信地址，在新的浏览器标签页地址栏中输入即完成私信群发"
-            />
-            <div className="msg-url">{url + sendPlayListParam}</div>
-          </div>
-        )
-      });
-      // fetch(url + sendPlayListParam).then(res => res.json()).then(data => {
-      //   if (data.code == 200) {
-      //     message.success('私信发送成功');
-      //   } else {
-      //     message.error(data.msg);
-      //   }
-      // })
+      url += sendPlayListParam + "&timestamp=" + new Date().getTime();
+      copy(url);
+      fetch(url, {credentials: "include"}).then(res => res.json()).then(data => {
+        console.log(data);
+        if (data.code === 200 && data.id !== -1) {
+          message.success('群发成功');
+          this.handleRefresh();
+        } else {
+          message.error('发送失败', data.msg);
+        }
+      }).catch(err => {
+        message.error('哎呀，服务器好像挂掉了...');
+      })
+      // Modal.success({
+      //   title: "私信地址",
+      //   width: 580,
+      //   maskClosable: true,
+      //   content: (
+      //     <div>
+      //       <Alert
+      //         type="info"
+      //         message="私信地址如下，已复制到粘贴板，前往新的浏览器标签页地址栏中粘贴即完成私信群发"
+      //       />
+      //       <div className="msg-url">{url}</div>
+      //     </div>
+      //   )
+      // });
     }
   }
 
   getUids() {
     let url =
-      this.baseUrl + "/comment/music?id=" + this.state.songId + "&offset=";
+      this.baseUrl + "/comment/music?id=" + this.state.songId + "&limit=30" + "&offset=";
     let offset = this.state.offset || 0;
     url += offset;
     fetch(url)
@@ -173,13 +182,15 @@ export default class Main extends React.Component {
     let content;
     let targets = [];
     if (this.state.uids && this.state.uids.length > 0) {
+      let i = 0;
       this.state.uids.map(item => {
         targets.push(
-          <div className="target-avatar" key={item.id}>
+          <div className="target-avatar" key={i}>
             <Avatar size="large" src={item.avatar} />
             <span className="target-name">{item.name}</span>
           </div>
         );
+        i++;
       });
     }
 
@@ -187,7 +198,7 @@ export default class Main extends React.Component {
       "待发送用户（" +
       (this.state.offset + 1) +
       " - " +
-      (this.state.offset + 20) +
+      (this.state.offset + 30) +
       ")";
 
     switch (this.state.curStep) {
