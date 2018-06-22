@@ -31,8 +31,8 @@ const msg = "用了所有的方式，来爱这个城市，南京。";
 const playlist = "2267332860";
 
 // 大概估算，超过50的时候会超时，前面的用户仍能发送成功，重复发送会失败，返回id=-1
-// client.phoneLogin(phone, password).then(() => {
-  client.getSongComment(songId, 50, 261).then(data => {
+client.phoneLogin(phone, password).then(() => {
+  client.getSongComment(songId, 20, 400).then(data => {
     const comments = data.comments;
     const uids = [];
     comments.forEach(comment => {
@@ -49,5 +49,10 @@ const playlist = "2267332860";
     sendPlayListParam += "&timestamp=" + Date.now();
     console.log(url.sendPlayList + sendPlayListParam);
     // api.sendPlayList(sendPlayListParam);
+    client.sendPlaylistMessage(uids, msg, playlist).then(data => {
+      console.log('send success');
+    }).catch(err => {
+      console.log(err);
+    })
   });
-// });
+});
