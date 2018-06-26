@@ -5,13 +5,11 @@ import {
   Input,
   Button,
   message,
-  Icon,
-  Modal,
-  Alert
+  Icon
 } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 
-import copy from 'copy-to-clipboard';
+import common from '../util/const';
 
 const Step = Steps.Step;
 
@@ -21,7 +19,7 @@ export default class Main extends React.Component {
     this.state = {
       curStep: 0,
       uids: null,
-      playlist: "2276679818",
+      playlist: "786275967",
       msg: "这首歌会成为今年的爆款！！！",
       songId: "513363403",
       offset: 0
@@ -30,7 +28,7 @@ export default class Main extends React.Component {
     this.songInput = null;
     this.msgInput = null;
 
-    this.baseUrl = "http://localhost:3000";
+    this.baseUrl = common.baseUrl;
     this.steps = [
       {
         title: "编辑消息",
@@ -99,7 +97,7 @@ export default class Main extends React.Component {
       }
       console.log(sendPlayListParam);
       url += sendPlayListParam + "&timestamp=" + new Date().getTime();
-      copy(url);
+      // copy(url);
       fetch(url, {credentials: "include"}).then(res => res.json()).then(data => {
         console.log(data);
         if (data.code === 200 && data.id !== -1) {

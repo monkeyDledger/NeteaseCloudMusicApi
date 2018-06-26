@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Icon, Input, Button, Checkbox, message } from "antd";
+import common from '../util/const';
 const FormItem = Form.Item;
 
 class LoginForm extends React.Component {
@@ -12,8 +13,8 @@ class LoginForm extends React.Component {
       if (!err) {
         console.log("Received values of form: ", values);
       }
-      const url = "phone=" + values.phone + "&password=" + values.password;
-      fetch("http://localhost:3000/login?" + url).then(res => res.json()).then(
+      const url = "/login?phone=" + values.phone + "&password=" + values.password;
+      fetch(common.baseUrl + url, {credentials: "include"}).then(res => res.json()).then(
         data => {
           console.info(data);
           if (data.code === 200){
