@@ -22,6 +22,7 @@ export default class Main extends React.Component {
       playlist: "786275967",
       msg: "这首歌会成为今年的爆款！！！",
       songId: "513363403",
+      songName: "梦都大街",
       offset: 0
     };
     this.playlistInput = null;
@@ -65,6 +66,33 @@ export default class Main extends React.Component {
     this.setState({
       songId: val
     });
+    const curTime = new Date().getTime();
+    const _this = this;
+    setTimeout(() => {
+      if ((new Date().getTime() - curTime) > 400) {
+        _this.getSongDetail(val);
+      }
+    }, 500)
+  }
+
+  getSongDetail(val) {
+    if (val !== '') {
+      const url = this.baseUrl + '/search?keywords=' + val;
+      fetch(url).then(res => res.json()).then(data => {
+        console.log('song detail', data);
+        if (data.code === 200) {
+          const result = data.result;
+          let songName = this.state.songName;
+          if (result.songCount > 0) {
+            const song = result.songs[0];
+            songName = song.name;
+          } else {
+            songName = '该id没有匹配的歌';
+          }
+          this.setState({songName})
+        }
+      })
+    }
   }
 
   handleRefresh() {
@@ -236,6 +264,9 @@ export default class Main extends React.Component {
                 this.songInput = e;
               }}
             />
+            <div className="song-details">
+              {this.state.songName}
+            </div>
           </div>
         );
         break;
