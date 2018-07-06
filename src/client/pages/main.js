@@ -322,7 +322,7 @@ export default class Main extends React.Component {
               <Avatar src={playlistDetail.pic} shape="square" style={{width: '40px', height: '40px'}}/>
               <div className="playlist-name">
                 {'歌单：' + playlistDetail.name}
-                <div className="user-name">{playlistDetail.creator}</div>
+                <div className="user-name">{'By: ' + playlistDetail.creator}</div>
               </div>
             </div>
           </div>
