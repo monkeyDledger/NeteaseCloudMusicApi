@@ -5,11 +5,14 @@ import {
   Input,
   Button,
   message,
-  Icon
+  Icon,
+  Spin,
+  Progress,
+  Alert
 } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 
-import common from '../util/const';
+import common from "../util/const";
 
 const Step = Steps.Step;
 
@@ -18,12 +21,15 @@ export default class Main extends React.Component {
     super(props);
     this.state = {
       curStep: 0,
-      uids: null,
-      playlist: "786275967",
+      uids: [],
+      playlist: "2271137634",
+      playlistDetail: {},
       msg: "这首歌会成为今年的爆款！！！",
       songId: "513363403",
       songName: "梦都大街",
-      offset: 0
+      offset: 0,
+      isLoading: true,
+      progressStatus: "active"
     };
     this.playlistInput = null;
     this.songInput = null;
@@ -47,6 +53,10 @@ export default class Main extends React.Component {
     ];
   }
 
+  componentDidMount() {
+    this.getPlaylistDeatil();
+  }
+
   hanlePlaylistChange() {
     const val = this.playlistInput.input.value || this.state.playlist;
     this.setState({
@@ -62,53 +72,132 @@ export default class Main extends React.Component {
   }
 
   handleSongChange() {
-    const val = this.songInput.input.value || this.state.songId;
+    const val = this.songInput.input.value || this.state.songName;
     this.setState({
-      songId: val
+      songName: val
     });
     const curTime = new Date().getTime();
     const _this = this;
     setTimeout(() => {
-      if ((new Date().getTime() - curTime) > 400) {
+      if (new Date().getTime() - curTime > 900) {
         _this.getSongDetail(val);
       }
-    }, 500)
+    }, 1000);
   }
 
-  getSongDetail(val) {
-    if (val !== '') {
-      const url = this.baseUrl + '/search?keywords=' + val;
-      fetch(url).then(res => res.json()).then(data => {
-        console.log('song detail', data);
-        if (data.code === 200) {
-          const result = data.result;
-          let songName = this.state.songName;
-          if (result.songCount > 0) {
-            const song = result.songs[0];
-            songName = song.name;
-          } else {
-            songName = '该id没有匹配的歌';
+  getPlaylistDeatil() {
+    const { playlist } = this.state;
+    if (playlist) {
+      const url = this.baseUrl + "/playlist/detail?id=" + playlist;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          console.log("playlist detail", data);
+          if (data.code === 200) {
+            const detail = data.playlist;
+            this.setState({
+              playlistDetail: {
+                pic: detail.coverImgUrl,
+                name: detail.name,
+                creator: detail.creator.nickname
+              }
+            });
           }
-          this.setState({songName})
-        }
-      })
+        });
     }
   }
 
-  handleRefresh() {
-    this.setState(
-      {
-        offset: this.state.offset + 30
-      },
-      () => {
-        this.getUids();
-      }
-    );
+  getSongDetail(val) {
+    if (val !== "") {
+      const url = this.baseUrl + "/search?keywords=" + val + "&limit=1";
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          console.log("song detail", data);
+          if (data.code === 200) {
+            const result = data.result;
+            let songId = this.state.songId;
+            if (result.songCount > 0) {
+              const song = result.songs[0];
+              songId = song.id;
+            } else {
+              songId = "没有匹配的歌";
+            }
+            this.setState({ songId });
+          }
+        });
+    }
   }
+
+  // handleRefresh() {
+  //   this.setState(
+  //     {
+  //       offset: this.state.offset + 30
+  //     },
+  //     () => {
+  //       this.getUids();
+  //     }
+  //   );
+  // }
 
   /**
    * 群发歌单
    */
+  sendPlayList(param, offset) {
+    const { uids } = this.state;
+    let url = param;
+    const left = uids.length - offset;
+    if (left > 0 && left < 30) {
+      for (let i = offset; i < offset + left; i++) {
+        url += uids[i];
+        if (i !== offset + left - 1) url += ",";
+      }
+    } else {
+      for (let i = offset; i < offset + 30; i++) {
+        url += uids[i];
+        if (i !== offset + 29) url += ",";
+      }
+    }
+    url += "&timestamp=" + new Date().getTime();
+    console.log(url);
+    fetch(url, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        let sendMsgs = offset + 30;
+        if (data.code === 200 && data.id !== -1) {
+          if (left > 0 && left < 30) {
+            sendMsgs = offset + left;
+            // message.success('已发送' + sendMsgs + "条私信");
+            this.setState({
+              offset: uids.length,
+              progressStatus: "success"
+            });
+            return;
+          }
+          this.setState({
+            offset: sendMsgs
+          });
+          // message.success('已发送' + sendMsgs + "条私信");
+          const _this = this;
+          setTimeout(() => {
+            _this.sendPlayList(param, offset + 30);
+          }, 300);
+        } else {
+          message.error("发送失败", data.msg);
+          this.setState({
+            progressStatus: "exception"
+          });
+        }
+      })
+      .catch(err => {
+        message.error("哎呀，服务器好像挂掉了...");
+        this.setState({
+          progressStatus: "exception"
+        });
+      });
+  }
+
   handleSendMsg() {
     let url = this.baseUrl + "/send/playlist?";
     const uids = this.state.uids;
@@ -119,24 +208,7 @@ export default class Main extends React.Component {
         "&playlist=" +
         this.state.playlist +
         "&user_ids=";
-      for (let i = 0; i < uids.length; i++) {
-        sendPlayListParam += uids[i].id;
-        if (i !== uids.length - 1) sendPlayListParam += ",";
-      }
-      console.log(sendPlayListParam);
-      url += sendPlayListParam + "&timestamp=" + new Date().getTime();
-      // copy(url);
-      fetch(url, {credentials: "include"}).then(res => res.json()).then(data => {
-        console.log(data);
-        if (data.code === 200 && data.id !== -1) {
-          message.success('群发成功');
-          this.handleRefresh();
-        } else {
-          message.error('发送失败', data.msg);
-        }
-      }).catch(err => {
-        message.error('哎呀，服务器好像挂掉了...');
-      })
+      this.sendPlayList(url + sendPlayListParam, 0);
       // Modal.success({
       //   title: "私信地址",
       //   width: 580,
@@ -154,31 +226,43 @@ export default class Main extends React.Component {
     }
   }
 
-  getUids() {
+  getUids(uids, offset) {
     let url =
-      this.baseUrl + "/comment/music?id=" + this.state.songId + "&limit=30" + "&offset=";
-    let offset = this.state.offset || 0;
+      this.baseUrl +
+      "/comment/music?id=" +
+      this.state.songId +
+      "&limit=30" +
+      "&offset=";
     url += offset;
     fetch(url)
       .then(res => res.json())
       .then(data => {
         if (data.code === 200) {
-          const comments = data.comments;
-          const uids = [];
+          let comments = data.comments;
+          let tmp = [];
           comments.forEach(comment => {
             const user = comment.user;
-            uids.push({
-              id: user.userId,
-              name: user.nickname,
-              avatar: user.avatarUrl
-            });
+            tmp.push(user.userId);
           });
+          tmp = Array.from(new Set(tmp));
+          console.log("tmp", tmp);
+          uids = uids.concat(tmp);
           console.log(uids);
-          this.setState({
-            uids: uids
-          });
+          if (comments.length < 30 || uids.length > 1999) {
+            this.setState({
+              isLoading: false,
+              uids,
+              uids
+            });
+            return;
+          }
+          const _this = this;
+          setTimeout(() => {
+            _this.getUids(uids, offset + 30);
+          }, 200);
         } else {
           message.error(data.msg);
+          return;
         }
       });
   }
@@ -197,7 +281,17 @@ export default class Main extends React.Component {
     if (curStep === 2) {
       const songId = this.state.songId;
       this.setState({ songId });
-      this.getUids();
+      const { uids } = this.state;
+      if (uids.length > 0) {
+        this.setState({
+          uids: []
+        });
+      }
+      this.setState({
+        isLoading: true,
+        progressStatus: 'active',
+      });
+      this.getUids([], 0);
     }
   }
 
@@ -205,27 +299,55 @@ export default class Main extends React.Component {
     const user = this.props.user || {};
     const icon = user.avatarUrl;
 
+    const {
+      msg,
+      playlistDetail,
+      songName,
+      uids,
+      isLoading,
+      offset,
+      progressStatus
+    } = this.state;
+
     let content;
-    let targets = [];
-    if (this.state.uids && this.state.uids.length > 0) {
-      let i = 0;
-      this.state.uids.map(item => {
-        targets.push(
-          <div className="target-avatar" key={i}>
-            <Avatar size="large" src={item.avatar} />
-            <span className="target-name">{item.name}</span>
+
+    let playlist;
+    if (playlistDetail.creator) {
+      playlist = (
+        <div className="playlist-container">
+          <div>私信样式</div>
+          <div className="playlist-detail">
+            <div>{"分享歌单：" + msg}</div>
+            <div className="playlist-content">
+              <Avatar src={playlistDetail.pic} shape="square" style={{width: '40px', height: '40px'}}/>
+              <div className="playlist-name">
+                {'歌单：' + playlistDetail.name}
+                <div className="user-name">{playlistDetail.creator}</div>
+              </div>
+            </div>
           </div>
-        );
-        i++;
-      });
+        </div>
+      );
+    } else {
+      playlist = "";
     }
 
-    const tip =
-      "待发送用户（" +
-      (this.state.offset + 1) +
-      " - " +
-      (this.state.offset + 30) +
-      ")";
+    const loadingIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+    const tip = isLoading
+      ? "正在获取[" + songName + "] 评论中的用户id"
+      : "获取到[" + uids.length + "]用户";
+    const percent = Math.round((offset / uids.length) * 100);
+
+    const songCommentIds = isLoading ? (
+      <Spin indicator={loadingIcon} tip={tip} />
+    ) : (
+      <div>
+        {tip}
+        <div className="send-progress">
+          <Progress type="circle" percent={percent} status={progressStatus} />
+        </div>
+      </div>
+    );
 
     switch (this.state.curStep) {
       case 0:
@@ -249,42 +371,28 @@ export default class Main extends React.Component {
                 this.msgInput = e;
               }}
             />
+            {playlist}
           </div>
         );
         break;
       case 1:
         content = (
           <div>
-            <span className="label">{"歌曲id"}</span>
+            <span className="label">{"歌名"}</span>
             <Input
-              type="number"
-              value={this.state.songId}
+              type="text"
+              value={this.state.songName}
               onChange={this.handleSongChange.bind(this)}
               ref={e => {
                 this.songInput = e;
               }}
             />
-            <div className="song-details">
-              {this.state.songName}
-            </div>
+            <div className="song-details">{this.state.songId}</div>
           </div>
         );
         break;
       default:
-        content = (
-          <div>
-            <div>
-              {tip}
-              <Icon
-                className="refresh-icon"
-                type="reload"
-                style={{ fontSize: 18, color: "green" }}
-                onClick={this.handleRefresh.bind(this)}
-              />
-            </div>
-            {targets}
-          </div>
-        );
+        content = <div>{songCommentIds}</div>;
         break;
     }
 

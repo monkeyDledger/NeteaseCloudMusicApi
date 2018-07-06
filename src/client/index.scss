@@ -56,6 +56,25 @@ body {
       display: inline-block;
     }
 
+    .playlist-container {
+      margin-top: 20px;
+      width: 350px;
+      height: auto;
+
+      .playlist-detail {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: lightgrey;
+        .playlist-content {
+          .playlist-name {
+            margin-left: 15px;
+            display: inline-block;
+            vertical-align: middle;
+          }
+        }
+      }
+    }
+
     .song-details {
       margin-top: 15px;
       font-size: 18px;
@@ -81,6 +100,10 @@ body {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .send-progress {
+      margin-top: 20px;
     }
   }
   .steps-action {

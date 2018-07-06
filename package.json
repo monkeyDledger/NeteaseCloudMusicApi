@@ -3,7 +3,7 @@
   "version": "2.13.0",
   "description": "网易云音乐 NodeJS 版 API",
   "scripts": {
-    "start": "node app.js",
+    "start": "forever start app.js",
     "test": "mocha -r intelli-espower-loader -t 20000 test"
   },
   "keywords": [
