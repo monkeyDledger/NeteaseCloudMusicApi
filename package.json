@@ -4,6 +4,7 @@
   "description": "网易云音乐 NodeJS 版 API",
   "scripts": {
     "start": "forever start app.js",
+    "build": "cd src && npm start",
     "test": "mocha -r intelli-espower-loader -t 20000 test"
   },
   "keywords": [

@@ -231,7 +231,7 @@ export default class Main extends React.Component {
       this.baseUrl +
       "/comment/music?id=" +
       this.state.songId +
-      "&limit=30" +
+      "&limit=100" +
       "&offset=";
     url += offset;
     fetch(url)
@@ -248,7 +248,7 @@ export default class Main extends React.Component {
           console.log("tmp", tmp);
           uids = uids.concat(tmp);
           console.log(uids);
-          if (comments.length < 30 || uids.length > 1999) {
+          if (comments.length < 100 || uids.length > 4999) {
             this.setState({
               isLoading: false,
               uids,
@@ -258,7 +258,7 @@ export default class Main extends React.Component {
           }
           const _this = this;
           setTimeout(() => {
-            _this.getUids(uids, offset + 30);
+            _this.getUids(uids, offset + 100);
           }, 200);
         } else {
           message.error(data.msg);
@@ -290,6 +290,7 @@ export default class Main extends React.Component {
       this.setState({
         isLoading: true,
         progressStatus: 'active',
+        offset: 0,
       });
       this.getUids([], 0);
     }
