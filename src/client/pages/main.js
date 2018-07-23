@@ -22,11 +22,12 @@ export default class Main extends React.Component {
     this.state = {
       curStep: 0,
       uids: [],
-      playlist: "2271137634",
+      // playlist: "2271137634",
+      playlist: "2324663283",
       playlistDetail: {},
-      msg: "这首歌会成为今年的爆款！！！",
+      msg: "献给许巍最好的歌~",
       songId: "513363403",
-      songName: "梦都大街",
+      songName: "盼兮",
       offset: 0,
       isLoading: true,
       progressStatus: "active"
@@ -57,10 +58,12 @@ export default class Main extends React.Component {
     this.getPlaylistDeatil();
   }
 
-  hanlePlaylistChange() {
+  handlePlaylistChange() {
     const val = this.playlistInput.input.value || this.state.playlist;
     this.setState({
       playlist: val
+    }, () => {
+      this.getPlaylistDeatil();
     });
   }
 
@@ -72,7 +75,7 @@ export default class Main extends React.Component {
   }
 
   handleSongChange() {
-    const val = this.songInput.input.value || this.state.songName;
+    const val = this.songInput.input.value || "";
     this.setState({
       songName: val
     });
@@ -126,6 +129,10 @@ export default class Main extends React.Component {
             this.setState({ songId });
           }
         });
+    } else {
+      this.setState({
+        songId: '没有匹配的歌',
+      });
     }
   }
 
@@ -182,12 +189,16 @@ export default class Main extends React.Component {
           const _this = this;
           setTimeout(() => {
             _this.sendPlayList(param, offset + 30);
-          }, 300);
+          }, 200);
         } else {
           message.error("发送失败", data.msg);
           this.setState({
             progressStatus: "exception"
           });
+          const _this = this;
+          setTimeout(() => {
+            _this.sendPlayList(param, offset + 30);
+          }, 200);
         }
       })
       .catch(err => {
@@ -357,8 +368,8 @@ export default class Main extends React.Component {
             <span className="label">{"歌单id"}</span>
             <Input
               type="number"
-              value={this.state.playlist}
-              onChange={this.hanlePlaylistChange.bind(this)}
+              defaultValue={this.state.playlist}
+              onChange={this.handlePlaylistChange.bind(this)}
               ref={e => {
                 this.playlistInput = e;
               }}
@@ -366,7 +377,7 @@ export default class Main extends React.Component {
             <span className="label">{"文案"}</span>
             <TextArea
               autosize={{ minRows: 3, maxRows: 6 }}
-              value={this.state.msg}
+              defaultValue={this.state.msg}
               onChange={this.handleMsgChange.bind(this)}
               ref={e => {
                 this.msgInput = e;
@@ -382,7 +393,8 @@ export default class Main extends React.Component {
             <span className="label">{"歌名"}</span>
             <Input
               type="text"
-              value={this.state.songName}
+              value={songName}
+              placeholder="输入一首歌名"
               onChange={this.handleSongChange.bind(this)}
               ref={e => {
                 this.songInput = e;
