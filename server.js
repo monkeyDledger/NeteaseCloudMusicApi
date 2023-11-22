@@ -307,6 +307,11 @@ async function serveNcmApi(options) {
     constructServerSubmission,
   ])
 
+  // 通配符路由，确保放在所有其他路由定义之后
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+
   /** @type {import('express').Express & ExpressExtension} */
   const appExt = app
   appExt.server = app.listen(port, host, () => {
