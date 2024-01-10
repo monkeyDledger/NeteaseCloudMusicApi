@@ -6,10 +6,10 @@
       "use": "@vercel/node@2.5.10"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/public/index.html"
+      "src": "/(.*)",
+      "dest": "/"
     }
   ]
 }
