@@ -5,7 +5,7 @@ const crypto = require('crypto')
 
 module.exports = async (query, request) => {
   query.cookie.os = 'ios'
-  query.cookie.appver = '8.20.21'
+  query.cookie.appver = '9.2.01'
   const data = {
     username: query.email,
     password:
